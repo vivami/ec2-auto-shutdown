@@ -5,7 +5,7 @@ if [[ $EUID -ne 0 ]]; then
   exit 1
 fi
 
-source ./ec2-auto-shutdown-config
+source /etc/ec2-auto-shutdown/ec2-auto-shutdown-config
 shutdown_after=`expr $shutdown_idle_minutes \* 60`
 ssh_max_idle_time=1
 instance_id=`ec2metadata --instance-id`
