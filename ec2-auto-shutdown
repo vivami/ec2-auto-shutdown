@@ -14,8 +14,8 @@ last_activity=`date +%s`
 while true
 do
   users_connected=`who -s | wc -l`
-  #established_sessions=`netstat | grep "$(hostname):http" | grep ESTABLISHED | wc -l`
-  established_sessions=`netstat | grep "$(hostname):http" | wc -l`
+  established_sessions=`netstat | grep "$(hostname):http" | grep ESTABLISHED | wc -l`
+  #established_sessions=`netstat | grep "$(hostname):http" | wc -l`
   average_load=`uptime | sed 's/.*load average: //' | awk -F\, '{print $1 }'`
   idle=`echo $average_load'<'$avg_load_threshold | bc -l`
 
