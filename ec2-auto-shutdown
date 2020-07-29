@@ -10,32 +10,34 @@ shutdown_after=`expr $shutdown_idle_minutes \* 60`
 ssh_max_idle_time=1
 instance_id=`ec2metadata --instance-id`
 region=`ec2metadata --availability-zone`
-last_activity=`date +%s`
+last_activity=`/bin/date +%s`
 while true
 do
   users_connected=`who -s | wc -l`
-  established_sessions=`netstat | grep "$(hostname):http" | grep ESTABLISHED | wc -l`
+  established_sessions=`/bin/netstat | /bin/grep "$(/bin/hostname):http" | /bin/grep ESTABLISHED | wc -l`
   #established_sessions=`netstat | grep "$(hostname):http" | wc -l`
-  average_load=`uptime | sed 's/.*load average: //' | awk -F\, '{print $1 }'`
+  average_load=`uptime | /bin/sed 's/.*load average: //' | awk -F\, '{print $1 }'`
   idle=`echo $average_load'<'$avg_load_threshold | bc -l`
+  
+  if [ "$established_sessions" -ne "0" ]; then
+	  last_activity=`/bin/date +%s`
+  fi
 
   if [ "$users_connected" -gt "0" ] && [ "$established_sessions" -eq "0" ]; then
-
-
-    shortest_idle=`who -s | awk '{ print $2 }' | (cd /dev && xargs stat -c '%n %U %X') | awk '{ print $1"\t"$2"\t"'"$(date +%s)"'-$3 }' | awk '{ print $3 }' | sort -n | head -1`
+    shortest_idle=`who -s | awk '{ print $2 }' | (cd /dev && xargs stat -c '%n %U %X') | awk '{ print $1"\t"$2"\t"'"$(/bin/date +%s)"'-$3 }' | awk '{ print $3 }' | sort -n | head -1`
     if [ "$shortest_idle" -lt "$ssh_max_idle_time" ]; then
-      last_activity=`date +%s`
+      last_activity=`/bin/date +%s`
     fi
   fi
 
-  now=`date +%s`
+  now=`/bin/date +%s`
   since_last_activity=`expr $now - $last_activity`
   if [ "$since_last_activity" -gt "$shutdown_after" ]; then
     if [ "$idle" ]; then
       #echo "Shutting down on $now"
       /sbin/shutdown now Shutdown initiated by ec2-auto-shutdown.
-      sleep 60
+      /bin/sleep 60
     fi
   fi
-  sleep 1
+  /bin/sleep 1
 done
